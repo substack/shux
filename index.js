@@ -77,13 +77,20 @@ Shux.prototype.createShell = function (id, opts) {
         args = cmd.slice(1);
         cmd = cmd[0];
     }
-    
-    var ps = pty.spawn(cmd, args, {
-        cwd: '/',
-        cols: opts.columns,
-        rows: opts.rows,
-        cwd: opts.cwd
+
+    // Pty options
+    var ptyOpts = {};  // Default values
+
+    var unWantedOpts = ['command', 'arguments', 'id'];
+    Object.keys(opts).filter(function(key) {
+        // Filter out unwanted keys for pty.js
+        return unWantedOpts.indexOf(key) == -1;
+    }).forEach(function(key) {
+        // Add to ptyOpts
+        ptyOpts[key] = opts[key];
     });
+
+    var ps = pty.spawn(cmd, args, ptyOpts);
     ps.on('exit', function () {
         delete self.shells[id];
         self.emit('exit', id);
